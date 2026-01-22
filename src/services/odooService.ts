@@ -708,6 +708,27 @@ export async function fetchStockValuation(limit = 100, dateFilter?: string): Pro
     limit
   })
 
+  // Recuperer les infos produit (default_code, name) depuis product.product
+  const productIds = [...new Set(moves.map(m => m.product_id[0]))]
+  const productsInfo = await callOdoo<Array<{
+    id: number
+    name: string
+    default_code: string | false
+  }>>('product.product', 'read', [productIds], {
+    fields: ['id', 'name', 'default_code']
+  })
+
+  // Map pour lookup rapide: productId -> { name, code }
+  const productInfoMap = new Map<number, { name: string; code: string }>()
+  for (const p of productsInfo) {
+    productInfoMap.set(p.id, {
+      name: p.name || '',
+      code: p.default_code || ''
+    })
+  }
+
+  console.log(`[fetchStockValuation] ${productIds.length} produits uniques, infos recuperees`)
+
   // Grouper par produit pour calculer le CUMP progressif
   const movesByProduct = new Map<number, typeof moves>()
   for (const move of moves) {
@@ -728,16 +749,16 @@ export async function fetchStockValuation(limit = 100, dateFilter?: string): Pro
     let cumulQtyNet = 0     // Quantite nette (entrees - sorties)
     let cumulValueNet = 0   // Valeur nette
 
+    // Recuperer les infos produit depuis le map
+    const productInfo = productInfoMap.get(productId)
+    const productCode = productInfo?.code || ''
+    const cleanProductName = productInfo?.name || productMoves[0]?.product_id[1] || ''
+
     for (const move of productMoves) {
       const destId = move.location_dest_id?.[0]
       const destName = (move.location_dest_id?.[1] || '').toLowerCase()
       // ENTREE = destination vers le stock interne (detecte dynamiquement)
       const isInbound = destId === stockLocationId || destName.includes('stock')
-
-      const productName = move.product_id[1]
-      const codeMatch = productName.match(/^\[([^\]]+)\]/)
-      const productCode = codeMatch ? codeMatch[1] : ''
-      const cleanProductName = codeMatch ? productName.replace(/^\[[^\]]+\]\s*/, '') : productName
 
       const pickingName = Array.isArray(move.picking_id) ? move.picking_id[1] : ''
       const originText = move.origin !== false ? move.origin : ''

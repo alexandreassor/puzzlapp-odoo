@@ -206,7 +206,11 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
   }
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('fr-FR', {
+    // Odoo stocke les dates en UTC sans suffixe 'Z'
+    const utcDateStr = dateStr.includes('Z') || dateStr.includes('+')
+      ? dateStr
+      : dateStr.replace(' ', 'T') + 'Z'
+    return new Date(utcDateStr).toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -216,7 +220,10 @@ export default function ProductDetailModal({ productId, isOpen, onClose }: Produ
   }
 
   const formatDateDisplay = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('fr-FR', {
+    const utcDateStr = dateStr.includes('Z') || dateStr.includes('+')
+      ? dateStr
+      : dateStr.replace(' ', 'T') + 'Z'
+    return new Date(utcDateStr).toLocaleDateString('fr-FR', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',

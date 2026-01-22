@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 
 // Definition des colonnes configurables
-type ColumnKey = 'date' | 'reference' | 'type' | 'product' | 'lot' | 'quantity' | 'remainingQty' | 'unitValue' | 'cump' | 'unit' | 'totalValue' | 'description' | 'remainingValue'
+type ColumnKey = 'date' | 'reference' | 'type' | 'productCode' | 'product' | 'lot' | 'quantity' | 'remainingQty' | 'unitValue' | 'cump' | 'unit' | 'totalValue' | 'description' | 'remainingValue'
 
 interface ColumnConfig {
   key: ColumnKey
@@ -22,7 +22,8 @@ const DEFAULT_COLUMNS_CONFIG: ColumnConfig[] = [
   { key: 'date', label: 'Date', defaultVisible: true, minWidth: 100, defaultWidth: 140 },
   { key: 'reference', label: 'Reference', defaultVisible: true, minWidth: 80, defaultWidth: 120 },
   { key: 'type', label: 'Type', defaultVisible: true, minWidth: 60, defaultWidth: 80 },
-  { key: 'product', label: 'Produit', defaultVisible: true, minWidth: 120, defaultWidth: 200 },
+  { key: 'productCode', label: 'Code Article', defaultVisible: true, minWidth: 100, defaultWidth: 140 },
+  { key: 'product', label: 'Nom Produit', defaultVisible: true, minWidth: 150, defaultWidth: 250 },
   { key: 'lot', label: 'Lot/numero', defaultVisible: true, minWidth: 80, defaultWidth: 100 },
   { key: 'quantity', label: 'Quantite', defaultVisible: true, minWidth: 70, defaultWidth: 90 },
   { key: 'remainingQty', label: 'Qte restante', defaultVisible: false, minWidth: 80, defaultWidth: 100 },
@@ -614,7 +615,12 @@ export default function StockValuationView() {
   }
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('fr-FR', {
+    // Odoo stocke les dates en UTC sans suffixe 'Z'
+    // On ajoute 'Z' pour que JavaScript l'interprete correctement comme UTC
+    const utcDateStr = dateStr.includes('Z') || dateStr.includes('+')
+      ? dateStr
+      : dateStr.replace(' ', 'T') + 'Z'
+    return new Date(utcDateStr).toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -640,13 +646,13 @@ export default function StockValuationView() {
       return
     }
 
-    const headers = ['Date', 'Reference', 'Type', 'Produit', 'Code', 'Quantite', 'Qte Restante', 'Valeur Unitaire', 'Unite', 'Valeur Totale', 'Description', 'Valeur Restante']
+    const headers = ['Date', 'Reference', 'Type', 'Code Article', 'Nom Produit', 'Quantite', 'Qte Restante', 'Valeur Unitaire', 'Unite', 'Valeur Totale', 'Description', 'Valeur Restante']
     const rows = dataToExport.map(entry => [
-      entry.date,
+      formatDate(entry.date),
       entry.reference,
       entry.quantity > 0 ? 'Entree' : 'Sortie',
-      entry.product,
       entry.productCode,
+      entry.product,
       entry.quantity,
       entry.remainingQty,
       entry.unitValue,
@@ -667,10 +673,10 @@ export default function StockValuationView() {
   }
 
   const exportCUMPCSV = () => {
-    const headers = ['Produit', 'Code', '1ere Ecriture', 'Qte Entree', 'Valeur Entree', 'Qte Sortie', 'Valeur Sortie', 'Qte Nette', 'CUMP', 'Valeur Stock']
+    const headers = ['Code Article', 'Nom Produit', '1ere Ecriture', 'Qte Entree', 'Valeur Entree', 'Qte Sortie', 'Valeur Sortie', 'Qte Nette', 'CUMP', 'Valeur Stock']
     const rows = filteredProductCUMPs.map(p => [
-      p.productName,
       p.productCode,
+      p.productName,
       p.firstEntryDate ? new Date(p.firstEntryDate).toLocaleDateString('fr-FR') : '',
       p.totalQtyIn,
       p.totalValueIn,
@@ -1481,8 +1487,11 @@ export default function StockValuationView() {
                   {isColumnVisible('type') && (
                     <th className="text-center py-3 px-2 text-slate-300 font-semibold whitespace-nowrap">Type</th>
                   )}
+                  {isColumnVisible('productCode') && (
+                    <th className="text-left py-3 px-3 text-slate-300 font-semibold whitespace-nowrap">Code Article</th>
+                  )}
                   {isColumnVisible('product') && (
-                    <th className="text-left py-3 px-3 text-slate-300 font-semibold whitespace-nowrap">Produit</th>
+                    <th className="text-left py-3 px-3 text-slate-300 font-semibold whitespace-nowrap">Nom Produit</th>
                   )}
                   {isColumnVisible('lot') && (
                     <th className="text-left py-3 px-3 text-slate-300 font-semibold whitespace-nowrap">Lot/numero</th>
@@ -1574,14 +1583,14 @@ export default function StockValuationView() {
                             )}
                           </td>
                         )}
+                        {isColumnVisible('productCode') && (
+                          <td className="py-2.5 px-3 text-slate-400 font-mono text-sm">
+                            {entry.productCode || '-'}
+                          </td>
+                        )}
                         {isColumnVisible('product') && (
-                          <td className="py-2.5 px-3">
-                            <div>
-                              {entry.productCode && (
-                                <span className="text-slate-400 font-mono text-xs mr-2">[{entry.productCode}]</span>
-                              )}
-                              <span className="text-white">{entry.product}</span>
-                            </div>
+                          <td className="py-2.5 px-3 text-white">
+                            {entry.product}
                           </td>
                         )}
                         {isColumnVisible('lot') && (
