@@ -25,10 +25,10 @@ export interface ApiSettings {
 const DEFAULT_SETTINGS: ApiSettings = {
   mode: 'local-proxy',
   proxyUrl: 'http://localhost:3001',
-  odooUrl: 'https://puzzl.odoo.com',
-  odooDb: 'puzzl',
-  odooUsername: 'alexandre.assor.puzzl@gmail.com',
-  odooApiKey: '286f8c1336625ae2e6bc69745cdc6e9903fa11da',
+  odooUrl: '',
+  odooDb: '',
+  odooUsername: '',
+  odooApiKey: '',
   odooVersion: '19'
 }
 

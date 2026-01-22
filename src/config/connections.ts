@@ -16,10 +16,10 @@ import type { OdooConnectionConfig } from '../services/odoo/types'
 // Connexion par defaut (peut etre surchargee par localStorage ou .env)
 export const DEFAULT_CONNECTIONS: OdooConnectionConfig[] = [
   {
-    id: 'puzzl-v19',
-    name: 'Puzzl (Odoo 19)',
-    url: import.meta.env.VITE_ODOO_URL || 'https://puzzl.odoo.com',
-    database: import.meta.env.VITE_ODOO_DB || 'puzzl',
+    id: 'default-v19',
+    name: 'Ma connexion Odoo',
+    url: import.meta.env.VITE_ODOO_URL || '',
+    database: import.meta.env.VITE_ODOO_DB || '',
     username: import.meta.env.VITE_ODOO_USERNAME || '',
     apiKey: import.meta.env.VITE_ODOO_API_KEY || '',
     version: '19',

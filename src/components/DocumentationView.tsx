@@ -179,7 +179,7 @@ export default function DocumentationView() {
           <div className="bg-purple-600/20 border border-purple-600/30 rounded-lg px-4 py-3 text-center">
             <p className="text-purple-400 text-xs mb-1">API</p>
             <p className="text-purple-300 font-medium">ODOO JSON-RPC</p>
-            <p className="text-purple-400/70 text-xs">puzzl.odoo.com</p>
+            <p className="text-purple-400/70 text-xs">votre-instance.odoo.com</p>
           </div>
         </div>
 
